@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html><head>
+  <title>Conference Room Example</title>
+
+
+  <script src="js/mqttws31.min.js"></script>
+</head>
+
+<body>
+  <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="500" height="700">
+    <rect id="F2" x="20" y="20" width="400" height="200" style="fill:none" stroke-width=4 stroke="black" ></rect>
+    <rect id="F1" x="20" y="250" width="400" height="200" style="fill:none" stroke-width=4 stroke="black"></rect>
+    <rect id="F0" x="20" y="480" width="400" height="200" style="fill:none" stroke-width=4 stroke="black"></rect>
+    <text x="100" y="80" width="400" height="200" >Focus Room 2</text>
+    <text x="100" y="310" width="400" height="200">Focus Room 1</text>
+    <text x="100" y="540" width="400" height="200" style="color:black" >Focus Room 0</text>
+	</g>
+</g>
+</svg>
+
+
+</body>
+
+<script>
+
+
+client = new Paho.MQTT.Client('localhost', 9001, "something");
+
+// set callback handlers
+client.onConnectionLost = onConnectionLost;
+client.onMessageArrived = onMessageArrived;
+
+// connect the client
+client.connect({onSuccess:onConnect});
+
+
+// called when the client connects
+function onConnect() {
+  // Once a connection has been made, make a subscription and send a message.
+  console.log("onConnect");
+  client.subscribe("doorsensor");
+}
+
+// called when the client loses its connection
+function onConnectionLost(responseObject) {
+  if (responseObject.errorCode !== 0) {
+    console.log("onConnectionLost:"+responseObject.errorMessage);
+  }
+}
+
+// called when a message arrives
+function onMessageArrived(message) {
+  var fill_color = "green";
+  [room, doorVal, pirVal] = message.payloadString.split(';');
+
+  fillColor = pirVal == "0" ? "green" : "red";
+  strokeColor = doorVal == "1" ? "green" : "red";
+
+  $("#" + room).attr("style","fill: " + fillColor);
+  $("#" + room).attr("stroke",strokeColor);
+
+  console.log("onMessageArrived:"+message.payloadString);
+}
+</script>
+
+</html>
